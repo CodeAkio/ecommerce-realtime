@@ -3,9 +3,9 @@
 /** @type {import('@adonisjs/lucid/src/Schema')} */
 const Schema = use('Schema')
 
-class ProductImageSchema extends Schema {
+class ImageProductSchema extends Schema {
   up () {
-    this.create('product_images', (table) => {
+    this.create('image_product', (table) => {
       table.increments()
       table.integer('image_id').unsigned()
       table.integer('product_id').unsigned()
@@ -26,8 +26,8 @@ class ProductImageSchema extends Schema {
   }
 
   down () {
-    this.drop('product_images')
+    this.drop('image_product')
   }
 }
 
-module.exports = ProductImageSchema
+module.exports = ImageProductSchema
