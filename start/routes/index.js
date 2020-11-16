@@ -17,3 +17,4 @@
 const Route = use('Route')
 
 require('./auth')
+require('./admin')
