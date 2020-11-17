@@ -15,7 +15,7 @@ class AuthController {
       const userRole = await Role.findBy('slug', 'customer')
       await user.roles().attach([userRole.id], null, trx)
 
-      await rtx.commit()
+      await trx.commit()
 
       return response.status(201).send({ data: user })
     } catch (error) {
