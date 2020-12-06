@@ -32,7 +32,7 @@ const str_random = async (length = 40) => {
  *
  * @param { FileJar } file - O arquivo a ser gerenciado
  * @param { string } path - O caminho para onde o arquivo deve ser movido
- * @return { string } - Retorna o arquivo no destino final
+ * @return { Object<FileJar> } - Retorna o arquivo no destino final
  */
 const manage_single_upload = async (file, path = null) => {
   path = path ? path : Helpers.publicPath('uploads')
@@ -41,7 +41,7 @@ const manage_single_upload = async (file, path = null) => {
   const random_name = await str_random(30)
   let filename = `${new Date().getTime()}-${random_name}.${file.subtype}`
 
-  // Renomeia arquivo
+  // Renomeia arquivo e move o arquivo
   await file.move(path, {
     name: filename
   })
