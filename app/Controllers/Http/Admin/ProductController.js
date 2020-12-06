@@ -3,6 +3,7 @@
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
+const Product = use('App/Models/Product')
 
 /**
  * Resourceful controller for interacting with products
@@ -15,9 +16,20 @@ class ProductController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
-   * @param {View} ctx.view
+   * @param {object} ctx.pagination
    */
-  async index ({ request, response, view }) {
+  async index ({ request, response, pagination }) {
+    const name = request.input('name')
+
+    const query = Product.query()
+
+    if (name) {
+      query.where('name', 'ilike', `%${name}%`)
+    }
+
+    const products = await query.paginate(pagination.page, pagination.limit)
+
+    return response.send(products)
   }
 
   /**
