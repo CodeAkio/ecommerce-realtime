@@ -19,9 +19,6 @@ class CategoryController {
    * @param {object} ctx.pagination
    */
   async index ({ request, response, pagination }) {
-    const page = request.input('page')
-    const limit = request.input('limit')
-
     const categories = await Category.query().paginate(
       pagination.page,
       pagination.limit
