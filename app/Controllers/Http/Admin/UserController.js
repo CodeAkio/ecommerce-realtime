@@ -34,18 +34,6 @@ class UserController {
   }
 
   /**
-   * Render a form to be used for creating a new user.
-   * GET users/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
-  }
-
-  /**
    * Create/save a new user.
    * POST users
    *
@@ -54,6 +42,23 @@ class UserController {
    * @param {Response} ctx.response
    */
   async store ({ request, response }) {
+    try {
+      const userData = request.only([
+        'name',
+        'surname',
+        'email',
+        'password',
+        'image_id'
+      ])
+
+      const user = await User.create(userData)
+
+      return response.status(201).send(user)
+    } catch (error) {
+      return response.status(400).send({
+        message: "Erro ao criar o usuário!"
+      })
+    }
   }
 
   /**
