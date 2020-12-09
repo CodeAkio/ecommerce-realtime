@@ -4,6 +4,8 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+const Order = use('App/Models/Order')
+
 /**
  * Resourceful controller for interacting with orders
  */
@@ -15,21 +17,24 @@ class OrderController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
-   * @param {View} ctx.view
+   * @param {object} ctx.pagination
    */
-  async index ({ request, response, view }) {
-  }
+  async index ({ request, response, pagination }) {
+    const { status, id } = request.only(['status', 'id'])
+    const query = Order.query()
 
-  /**
-   * Render a form to be used for creating a new order.
-   * GET orders/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+    if (status && id) {
+      query.where('status', status)
+      query.orWhere('id', 'ilike', `%${id}%`)
+    } else if (status) {
+      query.where('status', status)
+    } else if (id) {
+      query.where('id', 'ilike', `%${id}%`)
+    }
+
+    const orders = await query.paginate(pagination.page, pagination.limit)
+
+    return response.send(orders)
   }
 
   /**
@@ -53,18 +58,6 @@ class OrderController {
    * @param {View} ctx.view
    */
   async show ({ params, request, response, view }) {
-  }
-
-  /**
-   * Render a form to update an existing order.
-   * GET orders/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
   }
 
   /**
