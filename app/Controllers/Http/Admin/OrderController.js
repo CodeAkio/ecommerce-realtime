@@ -57,7 +57,10 @@ class OrderController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
+  async show ({ params: { id }, request, response, view }) {
+    const order = await Order.findOrFail(id)
+
+    return response.send(order)
   }
 
   /**
