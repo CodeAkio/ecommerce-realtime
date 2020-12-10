@@ -1,6 +1,6 @@
 'use strict'
 
-class AuthRegister {
+class Register {
   get rules () {
     return {
       name: 'required',
@@ -11,4 +11,4 @@ class AuthRegister {
   }
 }
 
-module.exports = AuthRegister
+module.exports = Register
