@@ -6,6 +6,7 @@
 
 const Order = use('App/Models/Order')
 const Database = use('Database')
+const OrderService = use('App/Services/Coupon/OrderService')
 
 /**
  * Resourceful controller for interacting with orders
@@ -47,6 +48,29 @@ class OrderController {
    * @param {Response} ctx.response
    */
   async store ({ request, response }) {
+    const trx = await Database.beginTransaction()
+    const { user_id, items, status } = request.all()
+
+    try {
+      let order = await Order.create({ user_id, status }, trx)
+
+      const orderService = new OrderService(order, trx)
+
+      if(items && items.length > 0) {
+        await orderService.syncItems(items)
+      }
+
+      await order.save(trx)
+      await trx.commit()
+
+      return response.status(201).send(order)
+    } catch (error) {
+      await trx.rollback()
+
+      return response.status(400).send({
+        message: "Não foi possível criar o pedido"
+      })
+    }
   }
 
   /**
