@@ -14,9 +14,14 @@ Route.group(() => {
   Route.resource('coupons', 'CouponController').apiOnly()
   Route.resource('orders', 'OrderController')
     .apiOnly()
-    .validator(new Map([[['orders.store'], 'Admin/StoreOrder']]))
+    .validator(new Map([[['orders.store'], ['Admin/StoreOrder']]]))
   Route.resource('images', 'ImageController').apiOnly()
-  Route.resource('users', 'UserController').apiOnly()
+  Route.resource('users', 'UserController')
+    .apiOnly()
+    .validator(new Map([[
+      ['users.store'], ['Admin/StoreUser'],
+      ['users.update'], ['Admin/StoreUser'],
+    ]]))
   Route.post('orders/:id/discount', 'OrderController.applyDiscount')
   Route.delete('orders/:id/discount', 'OrderController.removeDiscount')
 })
