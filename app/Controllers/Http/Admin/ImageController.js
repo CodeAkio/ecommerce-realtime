@@ -7,6 +7,7 @@
 const Image = use('App/Models/Image')
 const { manage_single_upload, manage_multiple_uploads } = use('App/Helpers')
 const fs = use('fs')
+const ImageTransformer = use('App/Transformers/Admin/ImageTransformer')
 
 /**
  * Resourceful controller for interacting with images
@@ -21,11 +22,13 @@ class ImageController {
    * @param {Response} ctx.response
    * @param {object} ctx.pagination
    */
-  async index ({ request, response, pagination }) {
-    const images = await Image
+  async index ({ request, response, pagination, transform }) {
+    let images = await Image
       .query()
       .orderBy('id', 'desc')
       .paginate(pagination.page, pagination.limit)
+
+    images = await transform.paginate(images, ImageTransformer)
 
     return response.send(images)
   }
@@ -38,7 +41,7 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ request, response, transform }) {
     try {
       const fileJar = request.file('images', {
         types: ['image'],
@@ -59,7 +62,9 @@ class ImageController {
             extension: file.subtype
           })
 
-          images.push(image)
+          const transformedImage = await transform.item(image, ImageTransformer)
+
+          images.push(transformedImage)
 
           return response.status(201).send({
             successes: images,
@@ -83,7 +88,9 @@ class ImageController {
             extension: file.subtype
           })
 
-          images.push(image)
+          const transformedImage = await transform.item(image, ImageTransformer)
+
+          images.push(transformedImage)
         })
       )
 
@@ -107,8 +114,9 @@ class ImageController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params: { id }, request, response, view }) {
-    const image = await Image.findOrFail(id)
+  async show ({ params: { id }, request, response, transform }) {
+    let image = await Image.findOrFail(id)
+    image = await transform.item(image, ImageTransformer)
 
     return response.send(image)
   }
@@ -121,14 +129,16 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params: { id }, request, response }) {
-    const image = await Image.findOrFail(id)
+  async update ({ params: { id }, request, response, transform }) {
+    let image = await Image.findOrFail(id)
 
     try {
       const original_name = request.only(['original_name'])
 
       image.merge({ original_name })
       await image.save()
+
+      image = image = await transform.item(image, ImageTransformer)
 
       return response.send(image)
     } catch (error) {
