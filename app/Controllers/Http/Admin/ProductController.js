@@ -29,7 +29,7 @@ class ProductController {
     }
 
     let products = await query.paginate(pagination.page, pagination.limit)
-    products = transform.paginate(products, ProductTransformer)
+    products = await transform.paginate(products, ProductTransformer)
 
     return response.send(products)
   }
@@ -47,7 +47,7 @@ class ProductController {
       const { name, description, price, image_id } = request.all()
 
       let product = await Product.create({ name, description, price, image_id })
-      product = transform.item(product, ProductTransformer)
+      product = await transform.item(product, ProductTransformer)
 
       return response.status(201).send(product)
     } catch (error) {
@@ -68,7 +68,7 @@ class ProductController {
    */
   async show ({ params: { id }, request, response, transform }) {
     let product = await Product.findOrFail(id)
-    product = transform.item(product, ProductTransformer)
+    product = await transform.item(product, ProductTransformer)
 
     return response.send(product)
   }
@@ -89,7 +89,7 @@ class ProductController {
 
       product.merge({ name, description, price, image_id })
       await product.save()
-      product = transform.item(product, ProductTransformer)
+      product = await transform.item(product, ProductTransformer)
 
       return response.send(product)
     } catch (error) {
