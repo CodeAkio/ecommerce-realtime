@@ -24,6 +24,7 @@ Route.group(() => {
     ]]))
   Route.post('orders/:id/discount', 'OrderController.applyDiscount')
   Route.delete('orders/:id/discount', 'OrderController.removeDiscount')
+  Route.get('dashboard', 'DashboardController.index').as('dashboard')
 })
   .prefix('v1/admin')
   .namespace('Admin')
