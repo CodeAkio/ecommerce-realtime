@@ -7,6 +7,7 @@
 const Coupon = use('App/Models/Coupon')
 const Database = use('Database')
 const CouponService = use('App/Services/Coupon/CouponService')
+const CouponTransformer = use('App/Transformers/Admin/CouponTransformer')
 
 /**
  * Resourceful controller for interacting with coupons
@@ -21,7 +22,7 @@ class CouponController {
    * @param {Response} ctx.response
    * @param {object} ctx.pagination
    */
-  async index ({ request, response, pagination }) {
+  async index ({ request, response, pagination, transform }) {
     const code = request.input('code')
     const query = Coupon.query()
 
@@ -29,7 +30,8 @@ class CouponController {
       query.where('code', 'ilike', `%${code}%`)
     }
 
-    const coupons = await query.paginate(pagination.page, pagination.limit)
+    let coupons = await query.paginate(pagination.page, pagination.limit)
+    coupons = await transform.paginate(coupons, CouponTransformer)
 
     return response.send(coupons)
   }
@@ -42,7 +44,7 @@ class CouponController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ request, response, transform }) {
     const trx = await Database.beginTransaction()
 
     let can_use_for = {
@@ -63,7 +65,7 @@ class CouponController {
     const { users, products } = request.only(['users', 'products'])
 
     try {
-      const coupon = await Coupon.create(couponData, trx)
+      let coupon = await Coupon.create(couponData, trx)
       const couponService = new CouponService(coupon, trx)
 
       if (users && users.length > 0) {
@@ -88,6 +90,9 @@ class CouponController {
 
       await coupon.save(trx)
       await trx.commit()
+      coupon = await transform
+        .include('users,products')
+        .item(coupon, CouponTransformer)
 
       return response.status(201).send(coupon)
     } catch (error) {
@@ -108,8 +113,11 @@ class CouponController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params: { id }, request, response, view }) {
-    const coupon = await Coupon.findOrFail(id)
+  async show ({ params: { id }, request, response, transform }) {
+    let coupon = await Coupon.findOrFail(id)
+    coupon = await transform
+      .include('users,products,orders')
+      .item(coupon, CouponTransformer)
 
     return response.send(coupon)
   }
@@ -122,10 +130,10 @@ class CouponController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params: { id }, request, response }) {
+  async update ({ params: { id }, request, response, transform }) {
     const trx = await Database.beginTransaction()
     const { users, products } = request.only(['users', 'products'])
-    const coupon = Coupon.findOrFail(id)
+    let coupon = Coupon.findOrFail(id)
 
     let can_use_for = {
       product: false,
@@ -169,6 +177,7 @@ class CouponController {
 
       await coupon.save(trx)
       await trx.commit()
+      coupon = await transform.item(coupon, CouponTransformer)
 
       return response.send(coupon)
     } catch (error) {
